@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ProjectAnalysis {
+  id              String   @id @default(cuid())
+  githubUrl       String
+  repoName        String
+  repoDescription String?
+  techStack       String   // JSON string of tech stack
+  directoryStructure String // JSON string of directory structure
+  mainFunctions   String   // JSON string of main functions/components
+  explanation     String   // Full project explanation
+  improvements    String   // JSON string of improvement suggestions
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  quizSessions    QuizSession[]
+}
+
+model QuizSession {
+  id              String   @id @default(cuid())
+  projectAnalysisId String
+  projectAnalysis ProjectAnalysis @relation(fields: [projectAnalysisId], references: [id], onDelete: Cascade)
+  questions       String   // JSON string of 15 questions
+  currentQuestion Int      @default(0)
+  score           Int      @default(0)
+  totalQuestions  Int      @default(15)
+  status          String   @default("in_progress") // in_progress, completed
+  answers         QuizAnswer[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model QuizAnswer {
+  id            String   @id @default(cuid())
+  quizSessionId String
+  quizSession   QuizSession @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
+  questionIndex Int
+  question      String
+  userAnswer    String
+  correctAnswer String
+  isCorrect     Boolean
+  explanation   String
+  createdAt     DateTime @default(now())
+}
